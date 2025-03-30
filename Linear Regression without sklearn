@@ -1,0 +1,87 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from datasets import load_dataset
+from sklearn.metrics import mean_squared_error, r2_score
+
+# 1. Load dataset
+dataset = load_dataset("imodels/diabetes-readmission")
+df = dataset['train'].to_pandas()
+
+# 2. Select variables
+x_var = 'number_emergency'
+y_var = 'number_inpatient'
+df_filtered = df[[x_var, y_var]].dropna()
+X_raw = df_filtered[[x_var]].values
+y_raw = df_filtered[[y_var]].values
+ones = np.ones([X_raw.shape[0], 1])
+X = np.concatenate([ones, X_raw], axis=1)
+
+# -------------------- Closed-form solution --------------------
+theta_closed = np.linalg.inv(X.T @ X) @ X.T @ y_raw
+y_pred_closed = X @ theta_closed
+mse_closed = mean_squared_error(y_raw, y_pred_closed)
+r2_closed = r2_score(y_raw, y_pred_closed)
+
+# -------------------- Gradient Descent --------------------
+alpha = 0.0001
+iters = 1000
+theta_gd = np.array([[1.0, 1.0]])
+loss_history = []
+
+def computeCost(X, y, theta):
+    error = X @ theta.T - y
+    return np.sum(error ** 2) / (2 * len(X))
+
+def gradientDescent(X, y, theta, alpha, iters):
+    history = []
+    for i in range(iters):
+        gradient = np.sum((X @ theta.T - y) * X, axis=0)
+        theta = theta - (alpha / len(X)) * gradient
+        cost = computeCost(X, y, theta)
+        history.append(cost)
+    return theta, history
+
+final_theta, loss_history = gradientDescent(X, y_raw, theta_gd, alpha, iters)
+y_pred_gd = X @ final_theta.T
+mse_gd = mean_squared_error(y_raw, y_pred_gd)
+r2_gd = r2_score(y_raw, y_pred_gd)
+
+# -------------------- Plot Regression Fit Comparison --------------------
+plt.figure(figsize=(8, 5))
+plt.scatter(X[:, 1], y_raw, label='Data', alpha=0.3)
+plt.plot(X[:, 1], y_pred_closed, color='red', label='Closed-form Fit')
+plt.plot(X[:, 1], y_pred_gd, color='green', linestyle='--', label='Gradient Descent Fit')
+plt.xlabel("Number of Emergency Visits")
+plt.ylabel("Number of Inpatient Admissions")
+plt.title("Linear Regression Comparison: Closed-form vs Gradient Descent")
+plt.legend()
+
+comparison = (
+    f"Closed-form MSE: {mse_closed:.4f}, R²: {r2_closed:.4f}\n"
+    f"Gradient Descent MSE: {mse_gd:.4f}, R²: {r2_gd:.4f}"
+)
+plt.text(
+    0.95, 0.05, comparison,
+    transform=plt.gca().transAxes,
+    fontsize=9,
+    verticalalignment='bottom',
+    horizontalalignment='right',
+    bbox=dict(boxstyle='round,pad=0.5', facecolor='lightyellow', edgecolor='gray')
+)
+
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# -------------------- Plot Loss Curve (Cost vs Iteration) --------------------
+plt.figure(figsize=(8, 4))
+plt.plot(range(iters), loss_history, color='blue')
+plt.title("Gradient Descent Loss over Iterations")
+plt.xlabel("Iteration")
+plt.ylabel("Cost (MSE)")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+## y = θ₀ + θ₁x

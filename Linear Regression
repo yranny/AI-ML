@@ -1,0 +1,49 @@
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+import pandas as pd
+from datasets import load_dataset
+
+# 1. Load dataset
+dataset = load_dataset("imodels/diabetes-readmission")
+df = dataset['train'].to_pandas()
+
+# 2. Select variables
+x_var = 'number_emergency'
+y_var = 'number_inpatient'
+df_filtered = df[[x_var, y_var]].dropna()
+
+X = df_filtered[[x_var]].values
+y = df_filtered[[y_var]].values
+
+# 3. Train model using sklearn
+model = LinearRegression()
+model.fit(X, y)
+y_pred = model.predict(X)
+
+# 4. Plot
+plt.figure(figsize=(8, 5))
+plt.scatter(X, y, label='Data', alpha=0.3)
+plt.plot(X, y_pred, color='red', label='Linear Regression Fit')
+plt.xlabel("Number of Emergency Visits")
+plt.ylabel("Number of Inpatient Admissions")
+plt.title("Linear Regression: Emergency Visits → Inpatient Admissions")
+plt.legend()
+
+# 5. Variable explanation box
+explanation = (
+    "Variable Explanation:\n"
+    "- number_emergency: number of emergency visits in the last year.\n"
+    "- number_inpatient: number of inpatient admissions in the last year."
+)
+plt.text(
+    0.95, 0.05, explanation,
+    transform=plt.gca().transAxes,
+    fontsize=9,
+    verticalalignment='bottom',
+    horizontalalignment='right',
+    bbox=dict(boxstyle='round,pad=0.5', facecolor='lightyellow', edgecolor='gray')
+)
+
+plt.grid(True)
+plt.tight_layout()
+plt.show()
