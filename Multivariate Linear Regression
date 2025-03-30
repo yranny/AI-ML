@@ -1,0 +1,61 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+# 1. Import data
+my_data = pd.read_csv('home.txt', names=["size", "bedroom", "price"])
+print("Raw Data (First 5 Rows):")
+print(my_data.head())
+
+# 2. Keep a copy for visualization
+raw_data = my_data.copy()
+
+# 3. Normalize data
+scaler_z = StandardScaler()
+z_data = pd.DataFrame(scaler_z.fit_transform(my_data), columns=my_data.columns)
+
+scaler_minmax = MinMaxScaler()
+minmax_data = pd.DataFrame(scaler_minmax.fit_transform(my_data), columns=my_data.columns)
+
+# 4. Plot normalization comparison
+fig, axs = plt.subplots(3, 3, figsize=(15, 9))
+features = ["size", "bedroom", "price"]
+
+for i, feature in enumerate(features):
+    axs[i, 0].hist(raw_data[feature], bins=30, color='gray', alpha=0.7)
+    axs[i, 0].set_title(f"Original: {feature}")
+    
+    axs[i, 1].hist(z_data[feature], bins=30, color='blue', alpha=0.7)
+    axs[i, 1].set_title(f"Z-score: {feature}")
+    
+    axs[i, 2].hist(minmax_data[feature], bins=30, color='green', alpha=0.7)
+    axs[i, 2].set_title(f"Min-Max: {feature}")
+
+plt.tight_layout()
+plt.suptitle("Feature Distribution: Original vs Z-score vs Min-Max", fontsize=16, y=1.02)
+plt.show()
+
+# 5. Train model using sklearn on Z-score normalized data
+X = z_data[["size", "bedroom"]].values
+y = z_data["price"].values
+
+model = LinearRegression()
+model.fit(X, y)
+y_pred = model.predict(X)
+
+# 6. Output model parameters
+print("\nModel Coefficients (Theta):", model.coef_)
+print("Model Intercept:", model.intercept_)
+
+# 7. Plot regression result
+plt.figure(figsize=(8, 5))
+plt.scatter(y, y_pred, alpha=0.4)
+plt.plot([y.min(), y.max()], [y.min(), y.max()], 'r--')
+plt.xlabel("Actual Price (Normalized)")
+plt.ylabel("Predicted Price (Normalized)")
+plt.title("Linear Regression Prediction (Z-score Normalized Data)")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
