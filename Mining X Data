@@ -1,12 +1,35 @@
 import tweepy
-from tweepy import OAuthHandler
- 
-consumer_key = 'WcniNT3qeVwEhSKvElAJlAqta'
-consumer_secret = '2AciS5IeEdJgNqzGTEH0Xk3et6hKnimSAOrQYk5tKHulTKLlIT'
-access_token = '1572009764-kIHp2AT72b6p8dYAXFmZuylLqUqt9c4HFwlwH8u'
-access_secret = '9tkU20qY07cXyACAsrgUecwvvz5ZMRuRDb7FoXz4MkfQS'
- 
-auth = OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_secret)
- 
-api = tweepy.API(auth)
+import json
+import time
+
+bearer_token = "AAAAAAAAAAAAAAAAAAAAAMo30QEAAAAAkS76AmzIS82GUbvOtUpFKWFMxlM%3DZeaQPFYfMPN5sWjrrU3cCrIQ57DbbiU8v5Ksa7peU5PW0KQAUk"
+client = tweepy.Client(bearer_token=bearer_token)
+
+def get_user_tweets(username, limit=5):
+    try:
+        user = client.get_user(username=username)
+        if not user.data:
+            return f"User {username} not found."
+            
+        user_id = user.data.id
+        tweets = client.get_users_tweets(id=user_id, max_results=limit)
+        return tweets.data if tweets.data else f"No tweets found for {username}."
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+# Get your tweets
+my_tweets = get_user_tweets("yranny", 2)
+print("MY TWEETS:")
+print(json.dumps(my_tweets, indent=2, default=str))
+
+# Wait to avoid rate limits
+time.sleep(15)  # Wait 15 seconds between requests
+
+# Get tweets from friends
+friends = ["elonmusk", "nasa"]
+for friend in friends:
+    friend_tweets = get_user_tweets(friend, 2)
+    print(f"\nTWEETS FROM {friend}:")
+    print(json.dumps(friend_tweets, indent=2, default=str))
+    time.sleep(15)  # Wait 15 seconds between requests
+    
