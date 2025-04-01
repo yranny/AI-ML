@@ -18,9 +18,9 @@ def get_user_tweets(username, limit=5):
         return f"Error: {str(e)}"
 
 # Get your tweets
-my_tweets = get_user_tweets("yranny", 2)
+my_tweets = get_user_tweets("yranny", 15)
 print("MY TWEETS:")
-print(json.dumps(my_tweets, indent=2, default=str))
+print(json.dumps(my_tweets, indent=15, default=str))
 
 # Wait to avoid rate limits
 time.sleep(15)  # Wait 15 seconds between requests
@@ -28,8 +28,8 @@ time.sleep(15)  # Wait 15 seconds between requests
 # Get tweets from friends
 friends = ["elonmusk", "nasa"]
 for friend in friends:
-    friend_tweets = get_user_tweets(friend, 2)
+    friend_tweets = get_user_tweets(friend, 15)
     print(f"\nTWEETS FROM {friend}:")
-    print(json.dumps(friend_tweets, indent=2, default=str))
+    print(json.dumps(friend_tweets, indent=15, default=str))
     time.sleep(15)  # Wait 15 seconds between requests
     

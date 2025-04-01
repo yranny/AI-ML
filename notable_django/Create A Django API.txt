@@ -1,0 +1,9 @@
+
+#notable_django/
+├── manage.py
+└── notable_django/
+    ├── __init__.py
+    ├── settings.py
+    ├── urls.py
+    └── wsgi.py
+
